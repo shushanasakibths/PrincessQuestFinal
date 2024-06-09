@@ -1,4 +1,5 @@
 public class Main {
-    MainFrame s = new MainFrame("period");
-
+    public static void main(String[] args) {
+        new WelcomeFrame();
+    }
 }

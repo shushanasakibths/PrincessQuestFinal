@@ -1,211 +1,194 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Player {
-    private final double MOVE_AMT = 0.6;
+    private final double MOVE_AMT = 5;
     private BufferedImage right;
     private boolean facingRight;
     private double xCoord;
     private double yCoord;
-    private int score;
-    private String name;
+    private int health;
+    private boolean moving;
+    private Animation walk, attack, idle;
+    private boolean attacking;
+    private ArrayList<Item> inventory;
 
-    private BufferedImage idleRight;
-    private BufferedImage idleLeft;
-    private BufferedImage idleDown;
-    private BufferedImage idleUp;
-    private Animation walk;
-    private Animation walkUp;
-    private Animation walkDown;
-    private Animation attack;
-    private Animation attackUp;
-    private Animation attackDown;
-
-
-    public Player(String rightImg, String name) {
-        this.name = name;
+    public Player(String name, String rightImg) {
         facingRight = true;
-        xCoord = 50;
-        yCoord = 435;
-        score = 0;
+        xCoord = 480;
+        yCoord = 240;
+        health = 3;
+        inventory = new ArrayList<>();
+        attacking = false;
+        moving = false;
+
         try {
             right = ImageIO.read(new File(rightImg));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
-
-        ArrayList<BufferedImage> walk_animation = new ArrayList<>();
+        ArrayList<BufferedImage> walkFrames = new ArrayList<>();
         for (int i = 1; i <= 8; i++) {
             String filename = "src/Princess/Walk/walk" + i + ".png";
             try {
-                walk_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        walk = new Animation(walk_animation,66);
-
-        ArrayList<BufferedImage> walkUp_animation = new ArrayList<>();
-        for (int i = 1; i <= 8; i++) {
-            String filename = "src/Princess/WalkUp/WalkUp" + i + ".png";
-            try {
-                walkUp_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
+                walkFrames.add(ImageIO.read(new File(filename)));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        walkUp = new Animation(walkUp_animation,66);
+        walk = new Animation(walkFrames, 100);
 
-        ArrayList<BufferedImage> walkDown_animation = new ArrayList<>();
-        for (int i = 1; i <= 8; i++) {
-            String filename = "src/Princess/WalkDown/WalkDown" + i + ".png";
-            try {
-                walkDown_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        walkDown = new Animation(walkDown_animation,66);
-
-        ArrayList<BufferedImage> attack_animation = new ArrayList<>();
+        ArrayList<BufferedImage> attackFrames = new ArrayList<>();
         for (int i = 1; i <= 9; i++) {
             String filename = "src/Princess/Attack/Attack" + i + ".png";
             try {
-                attack_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        attack = new Animation(attack_animation,66);
-
-        ArrayList<BufferedImage> attackUp_animation = new ArrayList<>();
-        for (int i = 1; i <= 9; i++) {
-            String filename = "src/Princess/AttackUp/AttackUp" + i + ".png";
-            try {
-                attackUp_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
+                attackFrames.add(ImageIO.read(new File(filename)));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        attackUp = new Animation(attackUp_animation,66);
+        attack = new Animation(attackFrames, 100);
 
-        ArrayList<BufferedImage> attackDown_animation = new ArrayList<>();
-        for (int i = 1; i <= 9; i++) {
-            String filename = "src/Princess/AttackDown/AttackDown" + i + ".png";
-            try {
-                attackDown_animation.add(ImageIO.read(new File(filename)));
-            }
-            catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
+        ArrayList<BufferedImage> idleFrames = new ArrayList<>();
+        try {
+            idleFrames.add(ImageIO.read(new File("src/Princess/Idle/IdleRight.png")));
+            idleFrames.add(ImageIO.read(new File("src/Princess/Idle/IdleLeft.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        attackDown = new Animation(attackDown_animation,66);
-
-
-
+        idle = new Animation(idleFrames, 500);
     }
 
-    //This function is changed from the previous version to let the player turn left and right
-    //This version of the function, when combined with getWidth() and getHeight()
-    //Allow the player to turn without needing separate images for left and right
-    public int getxCoord() {
-        if (facingRight) {
-            return (int) xCoord;
+    public void draw(Graphics g) {
+        if (attacking) {
+            g.drawImage(attack.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
+        } else if (moving) {
+            g.drawImage(walk.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
         } else {
-            return (int) (xCoord + (getPlayerImage().getWidth()));
+            g.drawImage(idle.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
         }
+    }
+
+    public void update() {
+        if (attacking) {
+            attack.update();
+            if (attack.isComplete()) {
+                attacking = false;
+                attack.reset();
+            }
+        } else {
+            if (moving) {
+                walk.update();
+            }
+            idle.update();
+        }
+    }
+
+    public void moveRight() {
+        facingRight = true;
+        xCoord += MOVE_AMT;
+    }
+
+    public void moveLeft() {
+        facingRight = false;
+        xCoord -= MOVE_AMT;
+    }
+
+    public void moveUp() {
+        yCoord -= MOVE_AMT;
+    }
+
+    public void moveDown() {
+        yCoord += MOVE_AMT;
+    }
+
+    public void attack() {
+        attacking = true;
+        attack.reset();
+    }
+
+    public void collectItem(Item item) {
+        inventory.add(item);
+    }
+
+    public void takeDamage() {
+        health--;
+        if (health <= 0) {
+            // Implement game over logic
+        }
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public ArrayList<Item> getInventory() {
+        return inventory;
+    }
+
+    public BufferedImage getHeartImage() {
+        try {
+            return ImageIO.read(new File("src/Assets/heart.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public int getxCoord() {
+        return (int) xCoord;
     }
 
     public int getyCoord() {
         return (int) yCoord;
     }
 
-    public int getScore() {
-        return score;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void faceRight() {
-        facingRight = true;
-    }
-
-    public void faceLeft() {
-        facingRight = false;
-    }
-
-    public void moveRight() {
-        if (xCoord + MOVE_AMT <= 920) {
-            xCoord += MOVE_AMT;
-        }
-    }
-
-    public void moveLeft() {
-        if (xCoord - MOVE_AMT >= 0) {
-            xCoord -= MOVE_AMT;
-        }
-    }
-
-    public void moveUp() {
-        if (yCoord - MOVE_AMT >= 0) {
-            yCoord -= MOVE_AMT;
-        }
-    }
-
-    public void moveDown() {
-        if (yCoord + MOVE_AMT <= 435) {
-            yCoord += MOVE_AMT;
-        }
-    }
-
-    public void turn() {
-        if (facingRight) {
-            faceLeft();
-        } else {
-            faceRight();
-        }
-    }
-
-    public void collectCoin() {
-        score++;
-    }
-
-    public BufferedImage getPlayerImage() {
-        return walk.getActiveFrame();
-    }
-
-    //These functions are newly added to let the player turn left and right
-    //These functions when combined with the updated getxCoord()
-    //Allow the player to turn without needing separate images for left and right
     public int getHeight() {
-        return getPlayerImage().getHeight();
+        return walk.getCurrentFrame().getHeight();
     }
 
     public int getWidth() {
         if (facingRight) {
-            return getPlayerImage().getWidth();
+            return walk.getCurrentFrame().getWidth();
         } else {
-            return getPlayerImage().getWidth() * -1;
+            return walk.getCurrentFrame().getWidth() * -1;
         }
     }
 
-    // we use a "bounding Rectangle" for detecting collision
     public Rectangle playerRect() {
-        int imageHeight = getPlayerImage().getHeight();
-        int imageWidth = getPlayerImage().getWidth();
+        int imageHeight = walk.getCurrentFrame().getHeight();
+        int imageWidth = walk.getCurrentFrame().getWidth();
         Rectangle rect = new Rectangle((int) xCoord, (int) yCoord, imageWidth, imageHeight);
         return rect;
+    }
+
+    public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+        moving = true;
+        switch (key) {
+            case KeyEvent.VK_W -> moveUp();
+            case KeyEvent.VK_S -> moveDown();
+            case KeyEvent.VK_A -> moveLeft();
+            case KeyEvent.VK_D -> moveRight();
+            case KeyEvent.VK_E -> attack();
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_W || key == KeyEvent.VK_S || key == KeyEvent.VK_A || key == KeyEvent.VK_D) {
+            moving = false;
+        }
+    }
+
+    public void setPosition(int x, int y) {
+        xCoord = x;
+        yCoord = y;
     }
 }
