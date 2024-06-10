@@ -3,7 +3,7 @@ import javax.swing.*;
 public class WelcomeFrame extends JFrame {
     public WelcomeFrame() {
         setTitle("Princess Quest");
-        setSize(960, 480);
+        setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

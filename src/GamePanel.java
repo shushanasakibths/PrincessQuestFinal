@@ -14,12 +14,14 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     private ArrayList<Enemy> enemies;
     private ArrayList<Item> items;
     private Timer timer;
-    private int time;
+    private int time, bgx, bgy;
     private boolean running;
     private int level;
     private boolean keyGiven;
 
     public GamePanel() {
+        bgx = 0;
+        bgy = 0;
         level = 0;
         initLevel();
 
@@ -44,22 +46,24 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
         switch (level) {
             case 0:
                 loadBackground("src/Assets/start.png");
-                items.add(new Item("src/Assets/chest.png", 300, 200));
+                items.add(new Item("src/Assets/chest.png", 145, 59));
                 player = new Player("Princess", "src/Princess/Idle/IdleRight.png");
                 player.setPosition(480, 240);
                 break;
             case 1:
                 loadBackground("src/Assets/level1.png");
                 enemies.add(new Enemy(200, 200));
-                enemies.add(new Enemy(400, 400));
+                enemies.add(new Enemy(300, 300));
                 //items.add(new Item("src/Assets/heart.png", 100, 100));
                 player.setPosition(50, 240);
                 break;
             case 2:
                 loadBackground("src/Assets/level2.png");
-                for (int i = 0; i < 6; i++) {
-                    enemies.add(new Enemy(200 + (i * 50), 200));
-                }
+                enemies.add(new Enemy(100, 100));
+                enemies.add(new Enemy(200, 150));
+                enemies.add(new Enemy(400, 250));
+                enemies.add(new Enemy(600, 100));
+                enemies.add(new Enemy(750, 225));
                 //items.add(new Item("src/Assets/heart.png", 150, 150));
                 player.setPosition(50, 240);
                 break;
@@ -92,7 +96,7 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(background, 0, 0, null);
+        g.drawImage(background, bgx, bgy, null);
         player.draw(g);
         for (Enemy enemy : enemies) {
             enemy.draw(g);
@@ -101,20 +105,20 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             item.draw(g);
         }
         drawHUD(g);
+        //DO THIS
     }
 
     private void drawHUD(Graphics g) {
-        // Draw player health
         for (int i = 0; i < player.getHealth(); i++) {
             g.drawImage(player.getHeartImage(), 20 + i * 60, 20, null);
         }
         for (int i = player.getHealth(); i < 3; i++) {
             g.drawImage(player.getDamagedHeartImage(), 20 + i * 60, 20, null);
         }
-        // Draw inventory
         for (int i = 0; i < player.getInventory().size(); i++) {
-            g.drawImage(player.getInventory().get(i).getImage(), 900 - i * 40, 20, null);
+            g.drawImage(player.getInventory().get(i).getImage(), 550 - i * 40, 20, null);
         }
+
     }
 
     @Override

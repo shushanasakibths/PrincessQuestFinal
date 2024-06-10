@@ -60,7 +60,6 @@ public class Player {
         ArrayList<BufferedImage> idleFrames = new ArrayList<>();
         try {
             idleFrames.add(ImageIO.read(new File("src/Princess/Idle/IdleRight.png")));
-            idleFrames.add(ImageIO.read(new File("src/Princess/Idle/IdleLeft.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }

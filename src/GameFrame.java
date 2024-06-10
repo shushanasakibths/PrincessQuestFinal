@@ -5,7 +5,7 @@ public class GameFrame extends JFrame {
 
     public GameFrame() {
         setTitle("Princess Quest");
-        setSize(960, 480);
+        setSize(600, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
