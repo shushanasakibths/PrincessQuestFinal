@@ -5,10 +5,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Player {
     private final double MOVE_AMT = 5;
-    private BufferedImage right;
+    private BufferedImage right, damagedHeart;
     private boolean facingRight;
     private double xCoord;
     private double yCoord;
@@ -29,6 +30,7 @@ public class Player {
 
         try {
             right = ImageIO.read(new File(rightImg));
+            damagedHeart = ImageIO.read(new File("src/Assets/damagedheart.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -120,7 +122,6 @@ public class Player {
     public void takeDamage() {
         health--;
         if (health <= 0) {
-            // Implement game over logic
         }
     }
 
@@ -139,6 +140,10 @@ public class Player {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public BufferedImage getDamagedHeartImage() {
+        return damagedHeart;
     }
 
     public int getxCoord() {
@@ -190,5 +195,23 @@ public class Player {
     public void setPosition(int x, int y) {
         xCoord = x;
         yCoord = y;
+    }
+
+    public boolean isAttacking() {
+        return attacking;
+    }
+
+    public void setAttacking(boolean attacking) {
+        this.attacking = attacking;
+    }
+
+    public void useKey() {
+        for (Iterator<Item> it = inventory.iterator(); ((Iterator<?>) it).hasNext();) {
+            Item item = it.next();
+            if (item.getImagePath().contains("normalkey.png") || item.getImagePath().contains("darkkey.png")) {
+                it.remove();
+                break;
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GamePanel extends JPanel implements KeyListener, MouseListener, ActionListener, Runnable {
     private BufferedImage background;
@@ -16,13 +17,15 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     private int time;
     private boolean running;
     private int level;
+    private boolean keyGiven;
 
     public GamePanel() {
-        level = 0; // Start level
+        level = 0;
         initLevel();
 
         time = 0;
         running = true;
+        keyGiven = false;
 
         addKeyListener(this);
         addMouseListener(this);
@@ -36,11 +39,12 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     private void initLevel() {
         items = new ArrayList<>();
         enemies = new ArrayList<>();
+        keyGiven = false;
 
         switch (level) {
             case 0:
                 loadBackground("src/Assets/start.png");
-                items.add(new Item("src/Assets/chest.png", 300, 200)); // Adding chest to the starting level
+                items.add(new Item("src/Assets/chest.png", 300, 200));
                 player = new Player("Princess", "src/Princess/Idle/IdleRight.png");
                 player.setPosition(480, 240);
                 break;
@@ -48,7 +52,7 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
                 loadBackground("src/Assets/level1.png");
                 enemies.add(new Enemy(200, 200));
                 enemies.add(new Enemy(400, 400));
-                items.add(new Item("src/Assets/heart.png", 100, 100)); // Adding heart to level 1
+                //items.add(new Item("src/Assets/heart.png", 100, 100));
                 player.setPosition(50, 240);
                 break;
             case 2:
@@ -56,16 +60,20 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
                 for (int i = 0; i < 6; i++) {
                     enemies.add(new Enemy(200 + (i * 50), 200));
                 }
-                items.add(new Item("src/Assets/heart.png", 150, 150)); // Adding heart to level 2
+                //items.add(new Item("src/Assets/heart.png", 150, 150));
                 player.setPosition(50, 240);
                 break;
             case 3:
                 loadBackground("src/Assets/level3.png");
-                items.add(new Item("src/Assets/chest.png", 300, 200)); // Adding chest to level 3
+                items.add(new Item("src/Assets/chest.png", 300, 200));
                 player.setPosition(50, 240);
                 break;
             case 4:
                 loadBackground("src/Assets/win.png");
+                running = false;
+                break;
+            case 5:
+                loadBackground("src/Assets/death.png");
                 running = false;
                 break;
             default:
@@ -96,9 +104,14 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     }
 
     private void drawHUD(Graphics g) {
+        // Draw player health
         for (int i = 0; i < player.getHealth(); i++) {
             g.drawImage(player.getHeartImage(), 20 + i * 60, 20, null);
         }
+        for (int i = player.getHealth(); i < 3; i++) {
+            g.drawImage(player.getDamagedHeartImage(), 20 + i * 60, 20, null);
+        }
+        // Draw inventory
         for (int i = 0; i < player.getInventory().size(); i++) {
             g.drawImage(player.getInventory().get(i).getImage(), 900 - i * 40, 20, null);
         }
@@ -124,9 +137,9 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
         for (Item item : items) {
             if (item.contains(click) && item.getImagePath().contains("chest.png")) {
                 if (level == 3) {
-                    player.collectItem(new Item("src/Assets/darkkey.png", 0, 0)); // Add dark key to inventory
+                    player.collectItem(new Item("src/Assets/darkkey.png", 0, 0));
                 } else {
-                    player.collectItem(new Item("src/Assets/normalkey.png", 0, 0)); // Add normal key to inventory
+                    player.collectItem(new Item("src/Assets/normalkey.png", 0, 0));
                 }
                 items.remove(item);
                 break;
@@ -152,7 +165,6 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             time++;
             if (time >= 60) {
                 running = false;
-                //FIX GAME OBER !!
             }
         }
     }
@@ -164,6 +176,8 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             for (Enemy enemy : enemies) {
                 enemy.update(player);
             }
+            checkEnemyCollisions();
+            checkPlayerHealth();
             repaint();
             try {
                 Thread.sleep(16);
@@ -186,24 +200,53 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             case 0:
             case 1:
                 if (hasKey && player.getxCoord() > 520) {
+                    player.useKey();
                     level++;
                     initLevel();
                 }
                 break;
             case 2:
                 if (hasKey && player.getxCoord() > 906) {
+                    player.useKey();
                     level++;
                     initLevel();
                 }
                 break;
             case 3:
-                if (hasKey) {
+                if (hasKey && player.getxCoord() > 700) {
+                    player.useKey();
                     level++;
                     initLevel();
                 }
                 break;
             default:
                 break;
+        }
+    }
+
+    private void checkEnemyCollisions() {
+        if (player.isAttacking()) {
+            Rectangle playerRect = player.playerRect();
+            for (Iterator<Enemy> it = enemies.iterator(); it.hasNext();) {
+                Enemy enemy = it.next();
+                if (playerRect.intersects(enemy.getRect())) {
+                    enemy.takeDamage();
+                    if (enemy.getHealth() <= 0) {
+                        it.remove();
+                    }
+                }
+            }
+            if (!keyGiven && enemies.isEmpty() && (level == 1 || level == 2)) {
+                player.collectItem(new Item("src/Assets/normalkey.png", 0, 0));
+                keyGiven = true;
+            }
+        }
+    }
+
+    private void checkPlayerHealth() {
+        if (player.getHealth() <= 0) {
+            level = 5;
+            initLevel();
         }
     }
 }

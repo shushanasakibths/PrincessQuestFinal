@@ -64,7 +64,15 @@ public class Enemy {
     public void takeDamage() {
         health--;
         if (health <= 0) {
-            // fix death!!!!
+            //doodowkfe
         }
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public Rectangle getRect() {
+        return new Rectangle(x, y, walkAnimation.getCurrentFrame().getWidth(), walkAnimation.getCurrentFrame().getHeight());
     }
 }
