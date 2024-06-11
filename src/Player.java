@@ -67,12 +67,28 @@ public class Player {
     }
 
     public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
         if (attacking) {
-            g.drawImage(attack.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
+            BufferedImage attackFrame = attack.getCurrentFrame();
+            if (!facingRight) {
+                g2d.drawImage(attackFrame, (int)xCoord, (int)yCoord, null);
+            } else {
+                g2d.drawImage(attackFrame, (int)xCoord + attackFrame.getWidth(), (int)yCoord, -attackFrame.getWidth(), attackFrame.getHeight(), null);
+            }
         } else if (moving) {
-            g.drawImage(walk.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
+            BufferedImage walkFrame = walk.getCurrentFrame();
+            if (facingRight) {
+                g2d.drawImage(walkFrame, (int)xCoord, (int)yCoord, null);
+            } else {
+                g2d.drawImage(walkFrame, (int)xCoord + walkFrame.getWidth(), (int)yCoord, -walkFrame.getWidth(), walkFrame.getHeight(), null);
+            }
         } else {
-            g.drawImage(idle.getCurrentFrame(), (int)xCoord, (int)yCoord, null);
+            BufferedImage idleFrame = idle.getCurrentFrame();
+            if (facingRight) {
+                g2d.drawImage(idleFrame, (int)xCoord, (int)yCoord, null);
+            } else {
+                g2d.drawImage(idleFrame, (int)xCoord + idleFrame.getWidth(), (int)yCoord, -idleFrame.getWidth(), idleFrame.getHeight(), null);
+            }
         }
     }
 

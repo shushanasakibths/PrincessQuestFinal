@@ -62,8 +62,6 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
                 enemies.add(new Enemy(100, 100));
                 enemies.add(new Enemy(200, 150));
                 enemies.add(new Enemy(400, 250));
-                enemies.add(new Enemy(600, 100));
-                enemies.add(new Enemy(750, 225));
                 //items.add(new Item("src/Assets/heart.png", 150, 150));
                 player.setPosition(50, 240);
                 break;
@@ -97,15 +95,17 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(background, bgx, bgy, null);
-        player.draw(g);
-        for (Enemy enemy : enemies) {
-            enemy.draw(g);
+        checkBackgroundTransition();
+        if (level < 4) {
+            player.draw(g);
+            for (Enemy enemy : enemies) {
+                enemy.draw(g);
+            }
+            for (Item item : items) {
+                item.draw(g);
+            }
+            drawHUD(g);
         }
-        for (Item item : items) {
-            item.draw(g);
-        }
-        drawHUD(g);
-        //DO THIS
     }
 
     private void drawHUD(Graphics g) {
@@ -120,6 +120,7 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
         }
 
     }
+
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -182,12 +183,23 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             }
             checkEnemyCollisions();
             checkPlayerHealth();
+            checkLevelTransition();
             repaint();
             try {
                 Thread.sleep(16);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void checkBackgroundTransition() {
+        if (level == 2 && player.getxCoord() > 450 && player.getxCoord() < 906 && bgx == 0 ) {
+            bgx = -400;
+            player.setPosition(50, player.getyCoord());
+        } else if (level == 3 && player.getxCoord() > 450 && bgx == 0) {
+            bgx = -200;
+            player.setPosition(50, player.getyCoord());
         }
     }
 
@@ -205,20 +217,23 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Act
             case 1:
                 if (hasKey && player.getxCoord() > 520) {
                     player.useKey();
+                    bgx = 0;
                     level++;
                     initLevel();
                 }
                 break;
             case 2:
-                if (hasKey && player.getxCoord() > 906) {
+                if (hasKey && player.getxCoord() > 506) {
                     player.useKey();
+                    bgx = 0;
                     level++;
                     initLevel();
                 }
                 break;
             case 3:
-                if (hasKey && player.getxCoord() > 700) {
+                if (hasKey && player.getxCoord() > 500) {
                     player.useKey();
+                    bgx = 0;
                     level++;
                     initLevel();
                 }
